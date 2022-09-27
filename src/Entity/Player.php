@@ -34,6 +34,7 @@ class Player implements DatedInterface
     public function __construct()
     {
         $this->games = new ArrayCollection();
+        $this->createdAt = new \DateTime();
     }
 
     public function getId(): ?int
