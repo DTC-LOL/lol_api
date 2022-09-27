@@ -39,28 +39,30 @@ class PlayerRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return Player[] Returns an array of Player objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('p')
-//            ->andWhere('p.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('p.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+   /**
+    *
+    * @param string $name
+    * @param string $location
+    *
+    * @return ?Player Returns one Player object or null
+    */
+   public function findOnePlayerByNameAndOrLocation(string $name, string $location): ?Player
+   {
+       $qb = $this->createQueryBuilder('p')
+            ->select('p, g')
+            ->leftJoin('p.games', 'g');
 
-//    public function findOneBySomeField($value): ?Player
-//    {
-//        return $this->createQueryBuilder('p')
-//            ->andWhere('p.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        if($name) {
+            $qb->andWhere('p.name LIKE :name')
+                ->setParameter('name', '%'.$name.'%');
+        }
+        if($location) {
+            $qb->andWhere('p.location LIKE :location')
+                ->setParameter('location', '%'.$location.'%');
+        }
+        
+        $qb->orderBy('p.id', 'DESC');
+        
+        return $qb->getQuery()->getOneOrNullResult();
+   }
 }
