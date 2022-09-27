@@ -20,6 +20,7 @@ class GameController extends AbstractController
     public function index(Request $request): Response
     {
         $response = new Response();
+        $response->headers->set('Content-Type', 'application/json');
 
         try {
             $repository = $this->doctrine->getRepository(Game::class);
