@@ -46,7 +46,7 @@ class PlayerRepository extends ServiceEntityRepository
     *
     * @return ?Player Returns one Player object or null
     */
-   public function findOnePlayerByNameAndOrLocation(string $name, string $location): ?Player
+   public function findOnePlayerByNameAndOrLocation(string | null $name, string | null $location): ?Player
    {
        $qb = $this->createQueryBuilder('p')
             ->select('p, g')
@@ -55,10 +55,13 @@ class PlayerRepository extends ServiceEntityRepository
         if($name) {
             $qb->andWhere('p.name LIKE :name')
                 ->setParameter('name', '%'.$name.'%');
-        }
-        if($location) {
+        } elseif($location) {
             $qb->andWhere('p.location LIKE :location')
                 ->setParameter('location', '%'.$location.'%');
+        } elseif($location && $name) {
+            $qb->andWhere('p.location LIKE :location')
+                ->andWhere('p.name LIKE :name')
+                ->setParameters(['location' => '%'.$location.'%', 'name' => '%'.$name.'%']);
         }
         
         $qb->orderBy('p.id', 'DESC');
