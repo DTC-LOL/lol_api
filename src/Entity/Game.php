@@ -29,6 +29,15 @@ class Game implements DatedInterface
     #[ORM\ManyToMany(targetEntity: Player::class, inversedBy: 'games')]
     private Collection $players;
 
+    #[ORM\Column()]
+    private ?float $gameDuration = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $gameCreation = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $gameMode = null;
+
     public function __construct()
     {
         $this->players = new ArrayCollection();
@@ -84,6 +93,42 @@ class Game implements DatedInterface
     public function removePlayer(Player $player): self
     {
         $this->players->removeElement($player);
+
+        return $this;
+    }
+
+    public function getGameDuration(): ?float
+    {
+        return $this->gameDuration;
+    }
+
+    public function setGameDuration(?float $gameDuration): self
+    {
+        $this->gameDuration = $gameDuration;
+
+        return $this;
+    }
+
+    public function getGameCreation(): ?\DateTimeInterface
+    {
+        return $this->gameCreation;
+    }
+
+    public function setGameCreation(\DateTimeInterface $gameCreation): self
+    {
+        $this->gameCreation = $gameCreation;
+
+        return $this;
+    }
+
+    public function getGameMode(): ?string
+    {
+        return $this->gameMode;
+    }
+
+    public function setGameMode(string $gameMode): self
+    {
+        $this->gameMode = $gameMode;
 
         return $this;
     }

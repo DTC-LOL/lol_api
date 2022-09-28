@@ -43,11 +43,18 @@ class AppFixtures extends Fixture
 
         // loop les parties -> api -> get les timelines de chaque partie
         foreach ($jsonGames as $_game) {
-            $gameDetailData = file_get_contents('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game."/timeline", false, $context);
+            $gameDetailData = file_get_contents('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game, false, $context);
+			$gameTimeline = file_get_contents('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game."/timeline", false, $context);
+
+			$game_creation = new \DateTime();
+			$game_creation->setTimestamp(json_decode($gameDetailData)->info->gameCreation/1000);
 
             $game = new Game();
             $game->setUuid($_game);
-            $game->setTimeline(json_decode($gameDetailData, true));
+			$game->setGameDuration(json_decode($gameDetailData)->info->gameDuration);
+			$game->setGameCreation($game_creation);
+			$game->setGameMode(json_decode($gameDetailData)->info->gameMode);
+            $game->setTimeline(json_decode($gameTimeline, true));
             $game->addPlayer($summoner);
 
             $manager->persist($game);
