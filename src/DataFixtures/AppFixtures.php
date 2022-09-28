@@ -46,15 +46,63 @@ class AppFixtures extends Fixture
             $gameDetailData = file_get_contents('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game, false, $context);
 			$gameTimeline = file_get_contents('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game."/timeline", false, $context);
 
-			$game_creation = new \DateTime();
-			$game_creation->setTimestamp(json_decode($gameDetailData)->info->gameCreation/1000);
+			// champs...
+			// json_decode($gameDetailData)->info->gameDuration
+			// game duration
+            // game creation
+            // game mode
+            // Participants -> summonerName
+            // Participants -> teamId
+            // Participants -> championId
+            // Participants -> champlevel
+            // Participants -> role
+            // Participants -> kills
+            // Participants -> deaths
+            // Participants -> assists
+            // Participants -> totalMinionsKilled
+            // Participants -> item0
+            // Participants -> item1
+            // Participants -> item2
+            // Participants -> item3
+            // Participants -> item4
+            // Participants -> item5
+            // Participants -> item6
+            // Participants -> visonScore
+            // Participants -> summoner2Id
+            // Participants -> summoner1Id
+            
+			$recap = [];
+
+			$recap['game_duration'] = json_decode($gameDetailData)->info->gameDuration;
+			$recap['game_creation'] = json_decode($gameDetailData)->info->gameCreation;
+			$recap['game_mode'] = json_decode($gameDetailData)->info->gameMode;
+
+			forEach(json_decode($gameDetailData)->info->participants as $_player) {
+				$recap['participants']['summonerName'] = $_player->summonerName;
+				$recap['participants']['teamId'] = $_player->teamId;
+				$recap['participants']['championId'] = $_player->championId;
+				$recap['participants']['champlevel'] = $_player->champLevel;
+				$recap['participants']['role'] = $_player->role;
+				$recap['participants']['kills'] = $_player->kills;
+				$recap['participants']['deaths'] = $_player->deaths;
+				$recap['participants']['assists'] = $_player->assists;
+				$recap['participants']['totalMinionsKilled'] = $_player->totalMinionsKilled;
+				$recap['participants']['item0'] = $_player->item0;
+				$recap['participants']['item1'] = $_player->item1;
+				$recap['participants']['item2'] = $_player->item2;
+				$recap['participants']['item3'] = $_player->item3;
+				$recap['participants']['item4'] = $_player->item4;
+				$recap['participants']['item5'] = $_player->item5;
+				$recap['participants']['item6'] = $_player->item6;
+				$recap['participants']['visionScore'] = $_player->visionScore;
+				$recap['participants']['summoner2Id'] = $_player->summoner2Id;
+				$recap['participants']['summoner1Id'] = $_player->summoner1Id;
+			}
 
             $game = new Game();
             $game->setUuid($_game);
-			$game->setGameDuration(json_decode($gameDetailData)->info->gameDuration);
-			$game->setGameCreation($game_creation);
-			$game->setGameMode(json_decode($gameDetailData)->info->gameMode);
             $game->setTimeline(json_decode($gameTimeline, true));
+			$game->setRecap($recap);
             $game->addPlayer($summoner);
 
             $manager->persist($game);
