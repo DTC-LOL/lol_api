@@ -28,4 +28,6 @@ jobs:
         USERNAME: ${{ secrets.VPS_USERNAME }}
         PORT: ${{ secrets.PORT }}
         KEY: ${{ secrets.SSHKEY }}
+        source: "."
+        target: "~/projetLol/api/"
         script: php ../composer.phar install && symfony server:start
