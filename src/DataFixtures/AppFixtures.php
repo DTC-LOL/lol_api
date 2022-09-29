@@ -52,7 +52,7 @@ class AppFixtures extends Fixture
 			$recap['game_creation'] = json_decode($gameDetailData)->info->gameCreation;
 			$recap['game_mode'] = json_decode($gameDetailData)->info->gameMode;
 
-			for ($i = 0; $i < 9; $i++) { 
+			for ($i = 0; $i < 10; $i++) { 
 				$recap['participants'][$i]['summonerName'] = json_decode($gameDetailData)->info->participants[$i]->summonerName;
 				$recap['participants'][$i]['teamId'] = json_decode($gameDetailData)->info->participants[$i]->teamId;
 				$recap['participants'][$i]['championId'] = json_decode($gameDetailData)->info->participants[$i]->championId;
