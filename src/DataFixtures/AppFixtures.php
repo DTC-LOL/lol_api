@@ -45,31 +45,6 @@ class AppFixtures extends Fixture
         foreach ($jsonGames as $_game) {
             $gameDetailData = file_get_contents('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game, false, $context);
 			$gameTimeline = file_get_contents('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game."/timeline", false, $context);
-
-			// champs...
-			// json_decode($gameDetailData)->info->gameDuration
-			// game duration
-            // game creation
-            // game mode
-            // Participants -> summonerName
-            // Participants -> teamId
-            // Participants -> championId
-            // Participants -> champlevel
-            // Participants -> role
-            // Participants -> kills
-            // Participants -> deaths
-            // Participants -> assists
-            // Participants -> totalMinionsKilled
-            // Participants -> item0
-            // Participants -> item1
-            // Participants -> item2
-            // Participants -> item3
-            // Participants -> item4
-            // Participants -> item5
-            // Participants -> item6
-            // Participants -> visonScore
-            // Participants -> summoner2Id
-            // Participants -> summoner1Id
             
 			$recap = [];
 
