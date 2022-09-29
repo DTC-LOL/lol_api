@@ -56,6 +56,7 @@ class AppFixtures extends Fixture
 				$recap['participants'][$i]['summonerName'] = json_decode($gameDetailData)->info->participants[$i]->summonerName;
 				$recap['participants'][$i]['teamId'] = json_decode($gameDetailData)->info->participants[$i]->teamId;
 				$recap['participants'][$i]['championId'] = json_decode($gameDetailData)->info->participants[$i]->championId;
+                $recap['participants'][$i]['championName'] = json_decode($gameDetailData)->info->participants[$i]->championName;
 				$recap['participants'][$i]['champlevel'] = json_decode($gameDetailData)->info->participants[$i]->champLevel;
 				$recap['participants'][$i]['role'] = json_decode($gameDetailData)->info->participants[$i]->role;
 				$recap['participants'][$i]['kills'] = json_decode($gameDetailData)->info->participants[$i]->kills;
