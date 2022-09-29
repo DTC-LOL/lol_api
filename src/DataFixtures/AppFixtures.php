@@ -52,26 +52,26 @@ class AppFixtures extends Fixture
 			$recap['game_creation'] = json_decode($gameDetailData)->info->gameCreation;
 			$recap['game_mode'] = json_decode($gameDetailData)->info->gameMode;
 
-			forEach(json_decode($gameDetailData)->info->participants as $_player) {
-				$recap['participants']['summonerName'] = $_player->summonerName;
-				$recap['participants']['teamId'] = $_player->teamId;
-				$recap['participants']['championId'] = $_player->championId;
-				$recap['participants']['champlevel'] = $_player->champLevel;
-				$recap['participants']['role'] = $_player->role;
-				$recap['participants']['kills'] = $_player->kills;
-				$recap['participants']['deaths'] = $_player->deaths;
-				$recap['participants']['assists'] = $_player->assists;
-				$recap['participants']['totalMinionsKilled'] = $_player->totalMinionsKilled;
-				$recap['participants']['item0'] = $_player->item0;
-				$recap['participants']['item1'] = $_player->item1;
-				$recap['participants']['item2'] = $_player->item2;
-				$recap['participants']['item3'] = $_player->item3;
-				$recap['participants']['item4'] = $_player->item4;
-				$recap['participants']['item5'] = $_player->item5;
-				$recap['participants']['item6'] = $_player->item6;
-				$recap['participants']['visionScore'] = $_player->visionScore;
-				$recap['participants']['summoner2Id'] = $_player->summoner2Id;
-				$recap['participants']['summoner1Id'] = $_player->summoner1Id;
+			for ($i = 0; $i < 9; $i++) { 
+				$recap['participants'][$i]['summonerName'] = json_decode($gameDetailData)->info->participants[$i]->summonerName;
+				$recap['participants'][$i]['teamId'] = json_decode($gameDetailData)->info->participants[$i]->teamId;
+				$recap['participants'][$i]['championId'] = json_decode($gameDetailData)->info->participants[$i]->championId;
+				$recap['participants'][$i]['champlevel'] = json_decode($gameDetailData)->info->participants[$i]->champLevel;
+				$recap['participants'][$i]['role'] = json_decode($gameDetailData)->info->participants[$i]->role;
+				$recap['participants'][$i]['kills'] = json_decode($gameDetailData)->info->participants[$i]->kills;
+				$recap['participants'][$i]['deaths'] = json_decode($gameDetailData)->info->participants[$i]->deaths;
+				$recap['participants'][$i]['assists'] = json_decode($gameDetailData)->info->participants[$i]->assists;
+				$recap['participants'][$i]['totalMinionsKilled'] = json_decode($gameDetailData)->info->participants[$i]->totalMinionsKilled;
+				$recap['participants'][$i]['item0'] = json_decode($gameDetailData)->info->participants[$i]->item0;
+				$recap['participants'][$i]['item1'] = json_decode($gameDetailData)->info->participants[$i]->item1;
+				$recap['participants'][$i]['item2'] = json_decode($gameDetailData)->info->participants[$i]->item2;
+				$recap['participants'][$i]['item3'] = json_decode($gameDetailData)->info->participants[$i]->item3;
+				$recap['participants'][$i]['item4'] = json_decode($gameDetailData)->info->participants[$i]->item4;
+				$recap['participants'][$i]['item5'] = json_decode($gameDetailData)->info->participants[$i]->item5;
+				$recap['participants'][$i]['item6'] = json_decode($gameDetailData)->info->participants[$i]->item6;
+				$recap['participants'][$i]['visionScore'] = json_decode($gameDetailData)->info->participants[$i]->visionScore;
+				$recap['participants'][$i]['summoner2Id'] = json_decode($gameDetailData)->info->participants[$i]->summoner2Id;
+				$recap['participants'][$i]['summoner1Id'] = json_decode($gameDetailData)->info->participants[$i]->summoner1Id;
 			}
 
             $game = new Game();
