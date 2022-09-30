@@ -30,6 +30,10 @@ class PlayerController extends AbstractController
             
             $player = $repository->findOnePlayerByNameAndOrLocation($name, $location);
 
+			if (null == $player) {
+				throw $this->createNotFoundException('Aucun joueur trouvé');
+			}
+
             $response->setContent($this->serializer->serialize($player));
             $response->setStatusCode(Response::HTTP_OK);
 
