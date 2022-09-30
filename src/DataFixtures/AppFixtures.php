@@ -59,7 +59,7 @@ class AppFixtures extends Fixture
 			$recap['game_creation'] = json_decode($gameDetailData)->info->gameCreation;
 			$recap['game_mode'] = json_decode($gameDetailData)->info->gameMode;
 
-			for ($i = 0; $i < 10; $i++) { 
+			for ($i = 0; $i < count(json_decode($gameDetailData)->info->participants); $i++) { 
 				$recap['participants'][$i]['summonerName'] = json_decode($gameDetailData)->info->participants[$i]->summonerName;
 				$recap['participants'][$i]['teamId'] = json_decode($gameDetailData)->info->participants[$i]->teamId;
 				$recap['participants'][$i]['championId'] = json_decode($gameDetailData)->info->participants[$i]->championId;
@@ -87,6 +87,9 @@ class AppFixtures extends Fixture
 						$recap['participants'][$i]['summoner2Id'] = $_spell->id;
 					}
 				}
+				
+				$recap['participants'][$i]['goldEarned'] = json_decode($gameDetailData)->info->participants[$i]->goldEarned;
+				$recap['participants'][$i]['goldSpent'] = json_decode($gameDetailData)->info->participants[$i]->goldSpent;
 			}
 
             $game = new Game();
