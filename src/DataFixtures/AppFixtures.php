@@ -41,6 +41,13 @@ class AppFixtures extends Fixture
 
         $jsonGames = json_decode($gamesData);
 
+		$ddragon_opts = array(
+            'http'=>array(
+            'method'=>"GET"
+            )
+        );
+		$spells = file_get_contents('http://ddragon.leagueoflegends.com/cdn/12.18.1/data/en_US/summoner.json', true);
+
         // loop les parties -> api -> get les timelines de chaque partie
         foreach ($jsonGames as $_game) {
             $gameDetailData = file_get_contents('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game, false, $context);
@@ -71,8 +78,15 @@ class AppFixtures extends Fixture
 				$recap['participants'][$i]['item5'] = json_decode($gameDetailData)->info->participants[$i]->item5;
 				$recap['participants'][$i]['item6'] = json_decode($gameDetailData)->info->participants[$i]->item6;
 				$recap['participants'][$i]['visionScore'] = json_decode($gameDetailData)->info->participants[$i]->visionScore;
-				$recap['participants'][$i]['summoner2Id'] = json_decode($gameDetailData)->info->participants[$i]->summoner2Id;
-				$recap['participants'][$i]['summoner1Id'] = json_decode($gameDetailData)->info->participants[$i]->summoner1Id;
+
+				forEach (json_decode($spells)->data as $_spell) { 
+					if($_spell->key == json_decode($gameDetailData)->info->participants[$i]->summoner1Id) {
+						$recap['participants'][$i]['summoner1Id'] = $_spell->id;
+					}
+					if($_spell->key == json_decode($gameDetailData)->info->participants[$i]->summoner2Id) {
+						$recap['participants'][$i]['summoner2Id'] = $_spell->id;
+					}
+				}
 			}
 
             $game = new Game();
