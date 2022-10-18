@@ -2,6 +2,13 @@
 
 namespace App\Entity;
 
-interface DatedInterface extends CreatedAtInterface, UpdatedAtInterface
+interface DatedInterface
 {
+    public function getCreatedAt(): ?\DateTime;
+
+    public function setCreatedAt(?\DateTime $createdAt): void;
+
+    public function getUpdatedAt(): ?\DateTime;
+
+    public function setUpdatedAt(\DateTime $updatedAt): void;
 }
