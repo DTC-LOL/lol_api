@@ -61,6 +61,7 @@ class AppFixtures extends Fixture
 
 			for ($i = 0; $i < count(json_decode($gameDetailData)->info->participants); $i++) { 
 				$recap['participants'][$i]['summonerName'] = json_decode($gameDetailData)->info->participants[$i]->summonerName;
+                $recap['participants'][$i]['puuid'] = json_decode($gameDetailData)->info->participants[$i]->puuid;
 				$recap['participants'][$i]['teamId'] = json_decode($gameDetailData)->info->participants[$i]->teamId;
 				$recap['participants'][$i]['championId'] = json_decode($gameDetailData)->info->participants[$i]->championId;
                 $recap['participants'][$i]['championName'] = json_decode($gameDetailData)->info->participants[$i]->championName;
