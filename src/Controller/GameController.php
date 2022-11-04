@@ -29,6 +29,10 @@ class GameController extends AbstractController
             
             $game = $repository->findOneBy(['uuid' => $uuid]);
 
+			if (null == $game) {
+				throw $this->createNotFoundException('Aucun joueur trouvé');
+			}
+
             $response->setContent($this->serializer->serialize($game));
             $response->setStatusCode(Response::HTTP_OK);
 

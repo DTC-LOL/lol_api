@@ -25,3 +25,6 @@ services:
     # please note that last definitions always *replace* previous ones
     App\Services\EntitySerializer:
         autowire: true
+
+    App\Services\RiotApiFetcher:
+        autowire: true
