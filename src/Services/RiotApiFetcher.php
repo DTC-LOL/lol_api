@@ -20,37 +20,38 @@ class RiotApiFetcher
 	/**
 	 * Tape sur l'api externe pour récupérer les données du joueur et ses games pour insérer le tout en bdd
 	 *
-	 * @param string $playerParam 
+	 * @param string $playerParam - nom ou pseudo du joueur LoL
+     * @param $entityManager - doctrine manager pour persister et insérer l'entité en bdd
 	 *
-	 * @return array
+	 * @return Player
 	 */
-	public function populateOrUpdateDatabaseWithPlayer(string $playerParam): array
+	public function populateOrUpdateDatabaseWithPlayer(string $playerParam, $entityManager): Player
 	{
-		// api -> get des joueurs    
-        $jsonSummoner = self::fetch('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'.$playerParam);
+		// api -> get des joueurs
+        $jsonSummoner = self::fetch('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'.$playerParam, $this->api_key);
 		        
         // api -> fetch les games du joueur
-		$jsonGames = self::fetch('https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/'.$jsonSummoner->puuid.'/ids?start=0&count=20');
+		$jsonGames = self::fetch('https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/'.$jsonSummoner->puuid.'/ids?start=0&count=20', $this->api_key);
 
 		// persist ou update en bdd
-		$existingPlayer = $playerRepository->findOneBy(['puuid' => $jsonSummoner->puuid]);
+		$existingPlayer = $this->playerRepository->findOneBy(['puuid' => $jsonSummoner->puuid]);
         
 		$summoner = $existingPlayer == null ? new Player() : $existingPlayer;
         $summoner->setName($jsonSummoner->name);
         $summoner->setPuuid($jsonSummoner->puuid);
         $summoner->setLocation('europe');
-        $existingPlayer == null ? $manager->persist($summoner) : null;
+        $existingPlayer == null ? $entityManager->persist($summoner) : null;
 
-		$spells = self::fetch('http://ddragon.leagueoflegends.com/cdn/12.18.1/data/en_US/summoner.json', false);
+		$spells = self::fetch('http://ddragon.leagueoflegends.com/cdn/12.18.1/data/en_US/summoner.json', null);
 
         // loop les parties -> api -> get les timelines de chaque partie
         foreach ($jsonGames as $_game) {
-			$gameDetailData = self::fetch('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game);
-			$gameTimeline = self::fetch('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game."/timeline", true, true);
+			$gameDetailData = self::fetch('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game, $this->api_key);
+			$gameTimeline = self::fetch('https://europe.api.riotgames.com/lol/match/v5/matches/'.$_game."/timeline", $this->api_key, true, true);
             
-			$recap = self::sortJsonData($gameDetailData);
+			$recap = self::sortJsonData($gameDetailData, $spells);
 
-			$exisistingGame = $gameRepository->findOneBy(['uuid' => $_game]);
+			$exisistingGame = $this->gameRepository->findOneBy(['uuid' => $_game]);
 
 			$game = $exisistingGame == null ? new Game() : $exisistingGame;
 			
@@ -59,35 +60,31 @@ class RiotApiFetcher
 			$game->setRecap($recap);
             $game->addPlayer($summoner);
 
-            $exisistingGame == null ? $manager->persist($game) : null;
-            
+            $exisistingGame == null ? $entityManager->persist($game) : null;
         }
 
-		return dd($summoner);
-        
-        // $manager->flush();
+        $entityManager->flush();
 
-		// return $summoner;
+		return $summoner;
 	}
 	
 	/**
 	 * Fetch sur une adresse api
 	 *
-	 * @param string $url 
-	 * @param bool $isRiotApi
-	 * @param bool $jsonToAssociativeArray
+	 * @param string $url - url à appeler sur l'api
+	 * @param bool $isRiotApi - détermine si l'url donnée est sur RiotGames ou non (nécessaire pour savoir si la clé api doit être fournie dans le header)
+	 * @param bool $jsonToAssociativeArray - détermine si le résultat doit être converti en tableau
 	 *
-	 * @return array
+	 * @return array | \stdClass
 	 */
-	private static function fetch(string $url, bool | null $isRiotApi = true, bool | null $jsonToAssociativeArray = null): array
+	private static function fetch(string $url, string | null $apiKey, bool | null $isRiotApi = true, bool | null $jsonToAssociativeArray = null): array | \stdClass
 	{
-		$opts = [];
-		if($isRiotApi) {
+        if($isRiotApi) {
 			$opts = [
 				'http' => [
 					'method' => "GET",
 					'header' => "Accept-language: en\r\n" .
-								"X-Riot-Token: " . $this->api_key
+								"X-Riot-Token: " . $apiKey
 				]
 			];
 		} else {
@@ -110,57 +107,62 @@ class RiotApiFetcher
 	/**
 	 * Trie et récupère les données pertinentes de l'api riot
 	 *
-	 * @param array $input
+	 * @param array | \stdClass $gameDetailData - le détail d'un match préalablement récupéré sur l'api
+     * @param array | \stdClass $spells
 	 *
 	 * @return array
 	 */
-	private static function sortJsonData(array $input): array
+	private static function sortJsonData(array | \stdClass $gameDetailData, array | \stdClass $spells): array
 	{
 		$output = [];
 
-		$output['game_duration'] = $input->info->gameDuration;
-		$output['game_creation'] = $input->info->gameCreation;
-		$output['game_mode'] = $input->info->gameMode;
+		$output['game_duration'] = $gameDetailData->info->gameDuration;
+		$output['game_creation'] = $gameDetailData->info->gameCreation;
+		$output['game_mode'] = $gameDetailData->info->gameMode;
 
-		for ($i = 0; $i < count($input->info->participants); $i++) { 
-			$output['participants'][$i]['summonerName'] = $input->info->participants[$i]->summonerName;
-			$output['participants'][$i]['teamId'] = $input->info->participants[$i]->teamId;
-			$output['participants'][$i]['championId'] = $input->info->participants[$i]->championId;
-			$output['participants'][$i]['championName'] = $input->info->participants[$i]->championName;
-			$output['participants'][$i]['champlevel'] = $input->info->participants[$i]->champLevel;
-			$output['participants'][$i]['role'] = $input->info->participants[$i]->role;
-			$output['participants'][$i]['kills'] = $input->info->participants[$i]->kills;
-			$output['participants'][$i]['deaths'] = $input->info->participants[$i]->deaths;
-			$output['participants'][$i]['assists'] = $input->info->participants[$i]->assists;
-			$output['participants'][$i]['totalMinionsKilled'] = $input->info->participants[$i]->totalMinionsKilled;
-			$output['participants'][$i]['item0'] = $input->info->participants[$i]->item0;
-			$output['participants'][$i]['item1'] = $input->info->participants[$i]->item1;
-			$output['participants'][$i]['item2'] = $input->info->participants[$i]->item2;
-			$output['participants'][$i]['item3'] = $input->info->participants[$i]->item3;
-			$output['participants'][$i]['item4'] = $input->info->participants[$i]->item4;
-			$output['participants'][$i]['item5'] = $input->info->participants[$i]->item5;
-			$output['participants'][$i]['item6'] = $input->info->participants[$i]->item6;
-			$output['participants'][$i]['visionScore'] = $input->info->participants[$i]->visionScore;
+		for ($i = 0; $i < count($gameDetailData->info->participants); $i++) {
+			$output['participants'][$i]['summonerName'] = $gameDetailData->info->participants[$i]->summonerName;
+			$output['participants'][$i]['teamId'] = $gameDetailData->info->participants[$i]->teamId;
+			$output['participants'][$i]['championId'] = $gameDetailData->info->participants[$i]->championId;
+			$output['participants'][$i]['championName'] = $gameDetailData->info->participants[$i]->championName;
+			$output['participants'][$i]['champlevel'] = $gameDetailData->info->participants[$i]->champLevel;
+			$output['participants'][$i]['role'] = $gameDetailData->info->participants[$i]->role;
+			$output['participants'][$i]['kills'] = $gameDetailData->info->participants[$i]->kills;
+			$output['participants'][$i]['deaths'] = $gameDetailData->info->participants[$i]->deaths;
+			$output['participants'][$i]['assists'] = $gameDetailData->info->participants[$i]->assists;
+			$output['participants'][$i]['totalMinionsKilled'] = $gameDetailData->info->participants[$i]->totalMinionsKilled;
+			$output['participants'][$i]['item0'] = $gameDetailData->info->participants[$i]->item0;
+			$output['participants'][$i]['item1'] = $gameDetailData->info->participants[$i]->item1;
+			$output['participants'][$i]['item2'] = $gameDetailData->info->participants[$i]->item2;
+			$output['participants'][$i]['item3'] = $gameDetailData->info->participants[$i]->item3;
+			$output['participants'][$i]['item4'] = $gameDetailData->info->participants[$i]->item4;
+			$output['participants'][$i]['item5'] = $gameDetailData->info->participants[$i]->item5;
+			$output['participants'][$i]['item6'] = $gameDetailData->info->participants[$i]->item6;
+			$output['participants'][$i]['visionScore'] = $gameDetailData->info->participants[$i]->visionScore;
 
-			forEach (json_decode($spells)->data as $_spell) { 
-				if($_spell->key == $input->info->participants[$i]->summoner1Id) {
+			forEach ($spells->data as $_spell) {
+				if($_spell->key == $gameDetailData->info->participants[$i]->summoner1Id) {
 					$output['participants'][$i]['summoner1Id'] = $_spell->id;
 				}
-				if($_spell->key == $input->info->participants[$i]->summoner2Id) {
+				if($_spell->key == $gameDetailData->info->participants[$i]->summoner2Id) {
 					$output['participants'][$i]['summoner2Id'] = $_spell->id;
 				}
 			}
 			
-			$output['participants'][$i]['goldEarned'] = $input->info->participants[$i]->goldEarned;
-			$output['participants'][$i]['goldSpent'] = $input->info->participants[$i]->goldSpent;
+			$output['participants'][$i]['goldEarned'] = $gameDetailData->info->participants[$i]->goldEarned;
+			$output['participants'][$i]['goldSpent'] = $gameDetailData->info->participants[$i]->goldSpent;
 		}
 
-		return $input;
+		return $output;
 	}
 
-	public function getApiKey(): string
+    /**
+     * Récupère la clé api RiotGames stockée dans le .env
+     *
+     * @return string
+     */
+    public function getApiKey(): string
 	{
-		$apiKey = $this->container->getParameter('riot_api_key');
-		return $apiKey;
+        return $this->container->get('app.api.key');
 	}
 }
