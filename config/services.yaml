@@ -28,3 +28,6 @@ services:
 
     App\Services\RiotApiFetcher:
         autowire: true
+
+    Symfony\Contracts\HttpClient\HttpClientInterface:
+        public: true
